@@ -7,13 +7,38 @@ import numpy as np
 samples_n = 128
 model = torch.load("model.pth")
 harmonics = 8
-conv_a = [0.1] * 10
+filter_len = 12
+conv_a = [1/filter_len] * filter_len
+noise_level = 0.5
+
+loss_nn = 0
+loss_filter = 0
+criterium = nn.MSELoss()
+
+def MSE(x1, x2):
+    x1 = x1.detach().numpy()
+    x2 = x2.detach().numpy()
+    return np.mean(np.dot(x1 - x2, x1 - x2))
+
+rounds = 10000
+for i in range(rounds):
+    target = data_manager.get_clean(samples_n, harmonics)
+    data_in = data_manager.add_noise(target, noise_level)
+    result = model.forward(data_in)
+    conv_res = torch.tensor(np.convolve(data_in, conv_a, mode = "same"))
+    loss_nn += MSE(target[filter_len:-filter_len], result[filter_len:-filter_len])
+    loss_filter += MSE(target[filter_len:-filter_len], conv_res[filter_len:-filter_len])
+
+print(loss_nn / rounds)
+print(loss_filter / rounds)
 
 while 2137:
     target = data_manager.get_clean(samples_n, harmonics)
-    data_in = data_manager.add_noise(target, 0.1)
-    result = model.forward(data_in)
-    conv_res = np.convolve(data_in, conv_a, mode = "same")
+    data_in = data_manager.add_noise(target, noise_level)
+    result = model.forward(data_in)[filter_len:-filter_len]
+    conv_res = np.convolve(data_in, conv_a, mode = "same")[filter_len:-filter_len]
+    target = target[filter_len:-filter_len]
+    data_in = data_in[filter_len:-filter_len]
 
     plt.plot(target, color = "blue", linewidth = 2)
     plt.plot(data_in, color = "red", linewidth = 1)
