@@ -10,7 +10,7 @@ def next_data(channels, dev):
     return data_in.to(dev), target.to(dev)
 
 
-train = False
+train = True
 
 if train:
     # model
@@ -19,9 +19,7 @@ if train:
     model = nn.Sequential(
         nn.Linear(in_features=128, out_features=128),
         nn.ReLU(),
-        nn.Linear(in_features=128, out_features=32),
-        nn.ReLU(),
-        nn.Linear(in_features=32, out_features=128),
+        nn.Linear(in_features=128, out_features=128),
         nn.ReLU(),
         nn.Linear(in_features=128, out_features=128)
     ).to(dev)
@@ -32,18 +30,20 @@ if train:
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=1e-3)
 
-    epoch_n = 1000
+    epoch_n = 1024
+
+    loss_sum = 0
 
     for epoch in range(1, epoch_n + 1):
-        data_in, target = next_data(64, dev)
+        data_in, target = next_data(1024, dev)
         prediction = model.forward(data_in)
 
         optimizer.zero_grad()
         loss = criterion(target, prediction)
         loss.backward()
         optimizer.step()
-
-        print(loss)
+        loss_sum += float(loss)
+        print(loss_sum)
         print(epoch)
 
     torch.save(obj=model, f="model.pt")
@@ -61,7 +61,8 @@ else:
     while 2137:
         data_in, target = next_data(1, dev)
         prediction = model.forward(data_in)
-        plt.plot(data_in.cpu().detach().numpy())
-        plt.plot(prediction.cpu().detach().numpy())
+        plt.plot(data_in[0].cpu().detach().numpy(), "r")
+        plt.plot(target[0].cpu().detach().numpy(), "g")
+        plt.plot(prediction[0].cpu().detach().numpy(), "b")
         plt.show()
 
