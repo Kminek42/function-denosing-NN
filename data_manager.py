@@ -26,7 +26,8 @@ samples_n = 128
 harmonics = 16
 noise_level = 0.1
 
-while 2137:
+test = False
+while test:
     target = get_clean(length=samples_n, max_harmonics=harmonics, channels=4)
     data_in = add_noise(samples=target, max_amplitude=noise_level)
 
