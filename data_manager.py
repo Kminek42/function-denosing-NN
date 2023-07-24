@@ -18,8 +18,8 @@ def get_clean(*, length, max_harmonics, channels):
     return output
 
 
-def add_noise(*, samples, max_amplitude, channels):
-    return samples + max_amplitude * (2 * torch.rand((channels, len(samples[0]))) - 1)
+def add_noise(*, samples, max_amplitude):
+    return samples + max_amplitude * (2 * torch.rand((len(samples), len(samples[0]))) - 1)
 
 
 samples_n = 128
@@ -28,7 +28,7 @@ noise_level = 0.1
 
 while 2137:
     target = get_clean(length=samples_n, max_harmonics=harmonics, channels=4)
-    data_in = add_noise(samples=target, max_amplitude=noise_level, channels=4)
+    data_in = add_noise(samples=target, max_amplitude=noise_level)
 
     plt.plot(target[0], color = "blue", linewidth = 2)
     plt.plot(data_in[0], color = "red", linewidth = 1)
